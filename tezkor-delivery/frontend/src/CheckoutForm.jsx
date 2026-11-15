@@ -1,0 +1,11 @@
+import { ArrowRight, Bike, CheckCircle2, CreditCard } from 'lucide-react'
+import MapPanel from './MapPanel.jsx'
+import { coordinatePair } from './maps.js'
+
+const money = (value) => `${new Intl.NumberFormat('uz-UZ').format(Number(value))} so‘m`
+
+export default function CheckoutForm({ checkout, setCheckout, deliveryFee, total, busy, cartCount, onSubmit }) {
+  const setField = (field, value) => setCheckout((current) => ({ ...current, [field]: value, ...(field === 'address' && value !== current.address ? { delivery_latitude: null, delivery_longitude: null } : {}) }))
+  const setPoint = (point) => setCheckout((current) => ({ ...current, delivery_latitude: point?.lat ?? null, delivery_longitude: point?.lng ?? null }))
+  return <><div className="checkout-summary"><Bike size={22} /><div><strong>Manzilingizgacha yetkazamiz</strong><p>Yetkazish narxi: {money(deliveryFee)}</p></div></div><form onSubmit={onSubmit} aria-busy={busy}><fieldset disabled={busy}><label>Yetkazish manzili<input autoComplete="street-address" placeholder="Ko‘cha, uy, xonadon, mo‘ljal" required minLength={5} maxLength={400} value={checkout.address} onChange={(event) => setField('address', event.target.value)} /></label><MapPanel position={coordinatePair(checkout.delivery_latitude, checkout.delivery_longitude)} onChange={setPoint} disabled={busy} /><label>Telefon raqam<input type="tel" autoComplete="tel" placeholder="+998 90 123 45 67" required maxLength={24} value={checkout.phone} onChange={(event) => setField('phone', event.target.value)} /></label><label>Qo‘shimcha izoh <span className="muted">(ixtiyoriy)</span><textarea maxLength={600} placeholder="Masalan, domofon kodi yoki buyurtmaga izoh" value={checkout.note} onChange={(event) => setField('note', event.target.value)} /></label><label className="checkbox-label save-details"><input type="checkbox" checked={checkout.save_details} onChange={(event) => setField('save_details', event.target.checked)} /><span>Telefon va manzilni keyingi buyurtmalar uchun saqlash</span></label><div className="payment-option"><CreditCard size={21} /><span>Yetkazilganda naqd to‘lov</span><CheckCircle2 size={19} /></div><button className="primary-button full" disabled={busy || !cartCount}>{busy ? 'Yuborilmoqda…' : `Tasdiqlash · ${money(total)}`}<ArrowRight size={17} /></button></fieldset></form></>
+}
